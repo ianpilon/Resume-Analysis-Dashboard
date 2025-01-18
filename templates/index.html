@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .analysis-options {
+            margin-bottom: 20px;
+        }
+        
+        .option-group {
+            margin-bottom: 20px;
+        }
+        
+        .radio-group {
+            margin-top: 10px;
+        }
+        
+        .radio-label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        .keywords-container {
+            margin-top: 10px;
+        }
+        
+        .keywords-input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .keywords-input-group input[type="text"] {
+            width: 100%;
+            height: 40px;
+            margin-right: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        .keywords-input-group button {
+            width: 100px;
+            height: 40px;
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .keywords-input-group button:hover {
+            background-color: #3e8e41;
+        }
+        
+        .keyword-tags {
+            margin-top: 10px;
+        }
+        
+        .keyword-tag {
+            background-color: #f7f7f7;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+            display: inline-block;
+        }
+        
+        .remove-keyword {
+            background-color: #f7f7f7;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #ccc;
+        }
+        
+        .input-group input[type="text"] {
+            width: 100%;
+            height: 40px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        .input-group button {
+            width: 100%;
+            height: 40px;
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .input-group button:hover {
+            background-color: #3e8e41;
+        }
+        
+        #results {
+            padding: 20px;
+        }
+        
+        .analysis-section {
+            background-color: #f7f7f7;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .candidate-card {
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .candidate-name {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .info-group {
+            margin-bottom: 20px;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .info-content {
+            font-size: 16px;
+        }
+        
+        .tag {
+            background-color: #f7f7f7;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        
+        .assessment {
+            font-size: 16px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Resume Analysis Dashboard</h1>
+        
+        <div class="analysis-options">
+            <div class="option-group">
+                <h3>Experience Level</h3>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="experienceLevel" value="junior" checked>
+                        Junior Developer
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="experienceLevel" value="mid">
+                        Mid-Level Developer
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="experienceLevel" value="senior">
+                        Senior Developer
+                    </label>
+                </div>
+            </div>
+
+            <div class="option-group">
+                <h3>Keywords Filter</h3>
+                <div class="keywords-container">
+                    <div class="keywords-input-group">
+                        <input type="text" id="keywordInput" placeholder="Add keyword (e.g., full stack, React)">
+                        <button onclick="addKeyword()" class="secondary-button">Add</button>
+                    </div>
+                    <div id="keywordTags" class="keyword-tags"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="repoUrl" placeholder="Enter GitHub repository URL">
+            <button onclick="analyzeRepo()" class="primary-button">Analyze Resumes</button>
+        </div>
+
+        <div id="results">
+            <div class="analysis-section">
+                <h2 class="section-title">Analysis Process</h2>
+                <p>This analysis identifies developer candidates based on your selected criteria including:</p>
+                <ul>
+                    <li>Selected experience level</li>
+                    <li>Technical skills and their depth</li>
+                    <li>Project complexity and responsibilities</li>
+                    <li>Leadership and mentoring experience</li>
+                    <li>Keyword matches in experience and projects</li>
+                </ul>
+            </div>
+
+            <div class="analysis-section" id="candidatesSection">
+                <h2 class="section-title">Identified Candidates</h2>
+                <div id="candidatesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let keywords = new Set();
+
+        function addKeyword() {
+            const input = document.getElementById('keywordInput');
+            const keyword = input.value.trim().toLowerCase();
+            
+            if (keyword && !keywords.has(keyword)) {
+                keywords.add(keyword);
+                updateKeywordTags();
+                input.value = '';
+            }
+        }
+
+        function removeKeyword(keyword) {
+            keywords.delete(keyword);
+            updateKeywordTags();
+        }
+
+        function updateKeywordTags() {
+            const container = document.getElementById('keywordTags');
+            container.innerHTML = Array.from(keywords).map(keyword => `
+                <span class="keyword-tag">
+                    ${keyword}
+                    <button onclick="removeKeyword('${keyword}')" class="remove-keyword">&times;</button>
+                </span>
+            `).join('');
+        }
+
+        function getSelectedExperienceLevel() {
+            return document.querySelector('input[name="experienceLevel"]:checked').value;
+        }
+
+        function analyzeRepo() {
+            const repoUrl = document.getElementById('repoUrl').value;
+            console.log('Analyzing repository:', repoUrl);
+            
+            if (!repoUrl) {
+                alert('Please enter a repository URL');
+                return;
+            }
+
+            // Show loading state
+            const button = document.querySelector('.primary-button');
+            button.textContent = 'Analyzing...';
+            button.disabled = true;
+
+            console.log('Sending request to server...');
+            fetch('/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    repository_url: repoUrl,
+                    experience_level: getSelectedExperienceLevel(),
+                    keywords: Array.from(keywords)
+                })
+            })
+            .then(response => {
+                console.log('Server response:', response);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Parsed data:', data);
+                if (data.success) {
+                    displayResults(data.result);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while analyzing the repository');
+            })
+            .finally(() => {
+                // Reset button state
+                button.textContent = 'Analyze Resumes';
+                button.disabled = false;
+            });
+        }
+
+        function displayResults(results) {
+            console.log('Displaying results:', results);
+            const candidatesList = document.getElementById('candidatesList');
+            
+            if (typeof results === 'string') {
+                // If it's a string, display it directly with some formatting
+                const formattedResults = results
+                    .split('**')
+                    .map(part => part.trim())
+                    .filter(part => part.length > 0)
+                    .join('\n');
+                
+                candidatesList.innerHTML = `
+                    <div class="candidate-card">
+                        <div class="info-content">${formattedResults}</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // If we have structured data, use the original formatting
+            const candidates = parseResults(results);
+            let html = '';
+            candidates.forEach(candidate => {
+                html += `
+                    <div class="candidate-card">
+                        <div class="candidate-name">${candidate.name}</div>
+                        
+                        <div class="info-group">
+                            <div class="info-label">Years of Experience</div>
+                            <div class="info-content">${candidate.experience}</div>
+                        </div>
+                        
+                        <div class="info-group">
+                            <div class="info-label">Technical Skills</div>
+                            <div class="info-content">
+                                ${candidate.skills.split(',').map(skill => 
+                                    `<span class="tag">${skill.trim()}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="info-group">
+                            <div class="info-label">Project Complexity</div>
+                            <div class="info-content">${candidate.projects}</div>
+                        </div>
+                        
+                        <div class="info-group">
+                            <div class="info-label">Leadership Experience</div>
+                            <div class="info-content">${candidate.leadership}</div>
+                        </div>
+                        
+                        <div class="assessment">
+                            ${candidate.assessment}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            candidatesList.innerHTML = html || 'No candidates found.';
+        }
+
+        function parseResults(results) {
+            // This is a simple parser - you might need to adjust based on your actual results format
+            const candidates = [];
+            const sections = results.split('**Candidate:').slice(1);
+            
+            sections.forEach(section => {
+                const lines = section.split('**');
+                const candidate = {
+                    name: lines[0].trim(),
+                    experience: lines.find(l => l.includes('Years of Experience'))?.split('Years of Experience:**')[1]?.trim() || '',
+                    skills: lines.find(l => l.includes('Technical Skills'))?.split('Technical Skills:**')[1]?.trim() || '',
+                    projects: lines.find(l => l.includes('Project Complexity'))?.split('Project Complexity and Responsibilities:**')[1]?.trim() || '',
+                    leadership: lines.find(l => l.includes('Leadership or Mentoring Experience'))?.split('Leadership or Mentoring Experience:**')[1]?.trim() || '',
+                    assessment: lines.find(l => l.includes('Overall Assessment'))?.split('Overall Assessment:**')[1]?.trim() || ''
+                };
+                candidates.push(candidate);
+            });
+            
+            return candidates;
+        }
+
+        // Add keyboard support for adding keywords
+        document.getElementById('keywordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addKeyword();
+            }
+        });
+    </script>
+</body>
+</html>
